@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- The name of the application. -->
+    <string name="app_name">Present to Glass</string>
+
+    <!-- The name of the application. -->
+    <string name="glass_ip">Glass IP Address</string>
+
+    <!-- Tip text displayed at the bottom of the splash screen, if ip address is found. -->
+    <string name="tap_for_options">Tap for options</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="exit">Exit</string>
+    <string name="title_activity_main">Present to Glass</string>
+    <string name="hello_world">Hello world!</string>
+
+</resources>
