@@ -51,6 +51,7 @@ public class Client {
     public void stopPresentation(){
         if(ip.isEmpty()) return;
         new Thread(new Runnable() {
+            int dropped = 0;
             @Override
             public void run() {
                 try{
@@ -59,7 +60,9 @@ public class Client {
                     out.writeInt(2);
                     closeSocket(socket, null, out);
                 } catch (IOException ignore){
-                    run();
+                    if(dropped++ < 20){
+                        run();
+                    }
                 }
             }
         }).start();
@@ -68,15 +71,43 @@ public class Client {
     public void startPresentation() {
         if(ip.isEmpty()) return;
         new Thread(new Runnable() {
+            int dropped = 0;
             @Override
             public void run() {
                 try{
                     Socket socket = createSocket();
                     DataOutputStream out = createOut(socket);
+
                     out.writeInt(1);
                     closeSocket(socket, null, out);
+                } catch (IOException ignore) {
+                    if (dropped++ < 20){
+                        run();
+                    }
+                }
+            }
+
+        }).start();
+    }
+
+    public void endConnection() {
+        if(ip.isEmpty()) return;
+        new Thread(new Runnable() {
+            int dropped = 0;
+            @Override
+            public void run() {
+                try{
+                    Socket socket = createSocket();
+                    DataOutputStream out = createOut(socket);
+                    out.writeInt(4);
+                    closeSocket(socket, null, out);
+                    Main.context.finish();
                 } catch (IOException ignore){
-                    run();
+                    if (dropped++ < 20){
+                        run();
+                    } else {
+                        Main.context.finish();
+                    }
                 }
             }
 

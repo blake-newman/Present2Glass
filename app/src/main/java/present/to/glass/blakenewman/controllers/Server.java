@@ -31,11 +31,15 @@ public class Server{
     }
 
     public void destroy(){
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(serverSocket != null){
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
+
     }
 
     private class Connection extends Thread{

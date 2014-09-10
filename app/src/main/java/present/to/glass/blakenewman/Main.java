@@ -1,21 +1,24 @@
 package present.to.glass.blakenewman;
 
-import com.google.android.glass.app.Card;
 import com.google.android.glass.media.Sounds;
+import com.google.android.glass.touchpad.Gesture;
+import com.google.android.glass.touchpad.GestureDetector;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import present.to.glass.blakenewman.controllers.Client;
 import present.to.glass.blakenewman.controllers.Server;
@@ -23,35 +26,22 @@ import present.to.glass.blakenewman.controllers.Server;
 public class Main extends Activity implements View.OnClickListener{
 
     private final Handler mHandler = new Handler();
-    private static Handler UIHandler = new Handler(Looper.getMainLooper());
+    private GestureDetector mGestureDetector;
 
     /** Audio manager used to play system sound effects. */
     private AudioManager audioManager;
 
-    /** Sound pool used to play the game winning/losing sound effects. */
-    private SoundPool soundPool;
 
-    private static View view;
-
-    /**
-     * Stores the standard margin for a card, which is used when dynamically creating the table
-     * rows for the result cards.
-     */
-    private int cardMargin;
-
-    private static TextView tvIP;
+    public static Activity context;
 
     public static Server server;
     public static Client client;
-    public static Activity context;
 
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-
+        mGestureDetector = createGestureDetector(this);
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-
-        cardMargin = (int) getResources().getDimension(R.dimen.card_margin);
 
         context = this;
         createSplashLayout();
@@ -60,20 +50,55 @@ public class Main extends Activity implements View.OnClickListener{
 
     }
 
+    private GestureDetector createGestureDetector(Context context) {
+        GestureDetector gestureDetector = new GestureDetector(context);
+        //Create a base listener for generic gestures
+        gestureDetector.setBaseListener(new GestureDetector.BaseListener() {
+            @Override
+            public boolean onGesture(Gesture gesture) {
+                if (gesture == Gesture.SWIPE_DOWN) {
+                    server.destroy();
+                    client.endConnection();
+                    Timer timer = new Timer();
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            finish();
+                        }
+                    }, 2000);
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        return gestureDetector;
+    }
+
+    /*
+     * Send generic motion events to the gesture detector
+     */
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        if (mGestureDetector != null) {
+            return mGestureDetector.onMotionEvent(event);
+        }
+        return false;
+    }
+
     public static void createPresenter(){
         Intent intent = new Intent(context, Presenter.class);
         context.startActivity(intent);
-        context.finish();
     }
 
     private void createSplashLayout(){
         LayoutInflater vi = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        view = vi.inflate(R.layout.splash, null);
+        View view = vi.inflate(R.layout.splash, null);
         view.setOnClickListener(this);
         view.setFocusable(true);
         view.setFocusableInTouchMode(true);
 
-        tvIP = (TextView) view.findViewById(R.id.glass_ip);
+        TextView tvIP = (TextView) view.findViewById(R.id.glass_ip);
         tvIP.setText(Net.getIPAddress(true));
 
         setContentView(view);
@@ -95,7 +120,7 @@ public class Main extends Activity implements View.OnClickListener{
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem item = menu.getItem(0);
-        item.setEnabled(!client.ip.isEmpty());
+        item.setEnabled(!client.ip.equals(""));
         return true;
     }
 
@@ -107,6 +132,7 @@ public class Main extends Activity implements View.OnClickListener{
         // through the message queue, after the animation has completed, which results in a
         // smoother transition between activities.
         if (item.getItemId() == R.id.start) {
+
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -119,7 +145,8 @@ public class Main extends Activity implements View.OnClickListener{
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    finish();
+                    server.destroy();
+                    client.endConnection();
                 }
             });
             return true;
@@ -134,7 +161,6 @@ public class Main extends Activity implements View.OnClickListener{
 
     @Override
     public void finish(){
-        server.destroy();
         super.finish();
     }
 }
