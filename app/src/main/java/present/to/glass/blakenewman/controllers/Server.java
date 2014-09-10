@@ -60,7 +60,9 @@ public class Server{
                         Main.createPresenter();
                         break;
                     case (2):
-                        Presenter.context.finish();
+                        if(Presenter.context != null) {
+                            Presenter.context.finish();
+                        }
                         break;
                     case (3):
                         String note = in.readUTF();

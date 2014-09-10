@@ -31,6 +31,7 @@ public class Presenter extends Activity {
     public static Server server;
     public static Client client;
     private static Card card;
+    private static View view;
 
     private static Boolean isAwake = true;
 
@@ -51,19 +52,34 @@ public class Presenter extends Activity {
         super.onCreate(bundle);
         context = this;
         card = new Card(this);
+        card.setText("Loading");
+        view = card.getView();
+        context.setContentView(view);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+
         server = new Server();
         client = new Client();
     }
 
 
-    public static void update(String content, Boolean stream, Long time){
-        wake();
-        card.setText(content);
-        context.setContentView(card.getView());
+    public static void update(final String content, Boolean stream, Long time){
+//      wake();
+        context.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                card = new Card(context);
+                card.setText(content);
+                view = card.getView();
+                context.setContentView(view);
+            }
+        });
 
-        if(!stream && time.equals(Long.getLong("0"))){
-            screenTimer.schedule(screenTask, time);
-        }
+
+
+//        if(!stream && time.equals(Long.getLong("0"))){
+//            screenTimer.schedule(screenTask, time);
+//        }
     }
 
     public static void wake(){
@@ -74,5 +90,14 @@ public class Presenter extends Activity {
         params.screenBrightness = -1;
         context.getWindow().setAttributes(params);
         isAwake = true;
+    }
+
+    @Override
+    public void finish(){
+        client.stopPresentation();
+        server.destroy();
+        Intent intent = new Intent(this, Main.class);
+        this.startActivity(intent);
+        super.finish();
     }
 }

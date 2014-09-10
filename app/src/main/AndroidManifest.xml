@@ -24,7 +24,10 @@
                 android:name="com.google.android.glass.VoiceTrigger"
                 android:resource="@xml/voice_trigger_start_presenting" />
         </activity>
-        <activity android:name=".Presenter"/>
+        <activity
+            android:name=".Presenter"
+            android:immersive="true"
+        />
     </application>
 
 </manifest>
