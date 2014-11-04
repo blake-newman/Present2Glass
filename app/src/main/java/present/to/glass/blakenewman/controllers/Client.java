@@ -99,7 +99,7 @@ public class Client {
                 try{
                     Socket socket = createSocket();
                     DataOutputStream out = createOut(socket);
-                    out.writeInt(4);
+                    out.writeInt(3);
                     closeSocket(socket, null, out);
                     Main.context.finish();
                 } catch (IOException ignore){
@@ -107,6 +107,95 @@ public class Client {
                         run();
                     } else {
                         Main.context.finish();
+                    }
+                }
+            }
+
+        }).start();
+    }
+
+    public void nextNote() {
+        if(ip.isEmpty()) return;
+        new Thread(new Runnable() {
+            int dropped = 0;
+            @Override
+            public void run() {
+                try{
+                    Socket socket = createSocket();
+                    DataOutputStream out = createOut(socket);
+
+                    out.writeInt(4);
+                    closeSocket(socket, null, out);
+                } catch (IOException ignore) {
+                    if (dropped++ < 20){
+                        run();
+                    }
+                }
+            }
+
+        }).start();
+    }
+
+
+    public void nextSlide() {
+        if(ip.isEmpty()) return;
+        new Thread(new Runnable() {
+            int dropped = 0;
+            @Override
+            public void run() {
+                try{
+                    Socket socket = createSocket();
+                    DataOutputStream out = createOut(socket);
+
+                    out.writeInt(5);
+                    closeSocket(socket, null, out);
+                } catch (IOException ignore) {
+                    if (dropped++ < 20){
+                        run();
+                    }
+                }
+            }
+
+        }).start();
+    }
+
+    public void prevNote() {
+        if(ip.isEmpty()) return;
+        new Thread(new Runnable() {
+            int dropped = 0;
+            @Override
+            public void run() {
+                try{
+                    Socket socket = createSocket();
+                    DataOutputStream out = createOut(socket);
+
+                    out.writeInt(6);
+                    closeSocket(socket, null, out);
+                } catch (IOException ignore) {
+                    if (dropped++ < 20){
+                        run();
+                    }
+                }
+            }
+
+        }).start();
+    }
+
+    public void prevSlide() {
+        if(ip.isEmpty()) return;
+        new Thread(new Runnable() {
+            int dropped = 0;
+            @Override
+            public void run() {
+                try{
+                    Socket socket = createSocket();
+                    DataOutputStream out = createOut(socket);
+
+                    out.writeInt(7);
+                    closeSocket(socket, null, out);
+                } catch (IOException ignore) {
+                    if (dropped++ < 20){
+                        run();
                     }
                 }
             }

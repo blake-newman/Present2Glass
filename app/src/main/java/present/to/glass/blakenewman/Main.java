@@ -17,9 +17,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import present.to.glass.blakenewman.controllers.Client;
 import present.to.glass.blakenewman.controllers.Server;
 
@@ -29,8 +26,7 @@ public class Main extends Activity implements View.OnClickListener{
     private GestureDetector mGestureDetector;
 
     /** Audio manager used to play system sound effects. */
-    private AudioManager audioManager;
-
+    static private AudioManager audioManager;
 
     public static Activity context;
 
@@ -57,15 +53,7 @@ public class Main extends Activity implements View.OnClickListener{
             @Override
             public boolean onGesture(Gesture gesture) {
                 if (gesture == Gesture.SWIPE_DOWN) {
-                    server.destroy();
-                    client.endConnection();
-                    Timer timer = new Timer();
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            finish();
-                        }
-                    }, 2000);
+                    finish();
                     return true;
                 }
                 return false;
@@ -80,15 +68,13 @@ public class Main extends Activity implements View.OnClickListener{
      */
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        if (mGestureDetector != null) {
-            return mGestureDetector.onMotionEvent(event);
-        }
-        return false;
+        return mGestureDetector != null && mGestureDetector.onMotionEvent(event);
     }
 
     public static void createPresenter(){
         Intent intent = new Intent(context, Presenter.class);
         context.startActivity(intent);
+        audioManager.playSoundEffect(Sounds.SUCCESS);
     }
 
     private void createSplashLayout(){
@@ -145,8 +131,7 @@ public class Main extends Activity implements View.OnClickListener{
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    server.destroy();
-                    client.endConnection();
+                    finish();
                 }
             });
             return true;
@@ -160,7 +145,21 @@ public class Main extends Activity implements View.OnClickListener{
     }
 
     @Override
-    public void finish(){
-        super.finish();
+    public void onStop(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                server.destroy();
+                client.endConnection();
+                audioManager.playSoundEffect(Sounds.DISMISSED);
+            }
+        }).run();
+        /* Delay the killing of the whole app, to make sure all connections are closed*/
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        super.onStop();
     }
 }

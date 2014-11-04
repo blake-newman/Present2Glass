@@ -2,7 +2,7 @@
 <resources>
 
     <!-- The name of the application. -->
-    <string name="app_name">Present to Glass</string>
+    <string name="app_name">Present2Glass</string>
 
     <!-- The name of the application. -->
     <string name="glass_ip">Glass IP Address</string>
@@ -12,7 +12,7 @@
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="exit">Exit</string>
-    <string name="title_activity_main">Present to Glass</string>
+    <string name="title_activity_main">Present2Glass</string>
     <string name="hello_world">Hello world!</string>
 
 </resources>

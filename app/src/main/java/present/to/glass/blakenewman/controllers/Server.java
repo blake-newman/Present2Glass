@@ -59,6 +59,7 @@ public class Server{
                 in = new DataInputStream(socket.getInputStream());
                 out = new DataOutputStream(socket.getOutputStream());
                 int code = in.readInt();
+                System.out.println(code);
                 switch(code) {
                     case (1):
                         Main.createPresenter();
@@ -79,8 +80,7 @@ public class Server{
                         Main.client.ip = "";
                         break;
                 }
-            } catch (IOException ignore) {
-
+            } catch (IOException e) {
             } finally {
                 if(socket != null && !socket.isClosed()){
                     try {

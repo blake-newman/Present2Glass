@@ -2,12 +2,12 @@
 
     <item
         android:id="@+id/start"
-        android:icon="@drawable/ic_icon"
+        android:icon="@drawable/icon_113"
         android:title="@string/start"
         />
     <item
         android:id="@+id/exit"
-        android:icon="@drawable/ic_icon"
+        android:icon="@drawable/ic_stop"
         android:title="@string/exit"
         />
 
