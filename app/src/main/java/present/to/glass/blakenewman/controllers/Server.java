@@ -9,7 +9,7 @@ import java.net.Socket;
 
 public class Server{
     private ServerSocket serverSocket;
-
+    private String ip;
     public Server(){
         if(serverSocket != null) return;
         try {
@@ -30,74 +30,47 @@ public class Server{
         thread.start();
     }
 
-    public void destroy(){
+    public void destroySS(){
         if(serverSocket != null){
             try {
                 serverSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
-
     }
 
     private class Connection extends Thread{
         public Socket socket;
-        public DataOutputStream out;
-        public DataInputStream in;
 
         public void run(){
-            if(serverSocket.isClosed()){
-                return;
-            }
             try {
                 socket = serverSocket.accept();
                 socket.setPerformancePreferences(1,0,0);
-                Main.client.ip = socket.getInetAddress().toString();
-                socket.setReuseAddress(true);
-                in = new DataInputStream(socket.getInputStream());
-                out = new DataOutputStream(socket.getOutputStream());
-                int code = in.readInt();
-                System.out.println(code);
-                switch(code) {
-                    case (1):
-                        Main.createPresenter();
-                        break;
-                    case (2):
-                        if(Presenter.context != null) {
-                            Presenter.context.finish();
-                        }
-                        break;
-                    case (3):
-                        String note = in.readUTF();
-                        Boolean stream = in.readBoolean();
-                        Long time = in.readLong();
-                        Presenter.update(note, stream, time);
-                        break;
-                    case(4):
-                        System.out.println("Glass - Connection Ended");
-                        Main.client.ip = "";
-                        break;
+                if(ip.isEmpty()) {
+                    Main.client.ip = ip = socket.getInetAddress().toString();
                 }
-            } catch (IOException e) {
+                socket.setReuseAddress(true);
+                destroySS();
+            } catch (IOException ignored) {
+            } catch (NullPointerException ignored) {
             } finally {
                 if(socket != null && !socket.isClosed()){
                     try {
-                        if(in != null){
-                            in.close();
-                        }
-                        if(out != null){
-                            out.close();
-                        }
                         socket.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-                run();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (ip.isEmpty()){
+                    addConnection();
+                }
             }
-
         }
     }
 }

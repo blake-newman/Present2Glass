@@ -13,6 +13,7 @@ import com.google.android.glass.app.Card;
 import com.google.android.glass.media.Sounds;
 import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
+import com.google.android.glass.widget.CardBuilder;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,17 +32,18 @@ public class Presenter extends Activity {
     static private AudioManager audioManager;
 
 
-    private static Card card;
+    private static CardBuilder card;
     private static View view;
 
     private static Timer screenTimer;
     private static TimerTask screenTask;
+    public static Boolean alive = false;
 
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         context = this;
-        card = new Card(this);
+        card = new CardBuilder(this, CardBuilder.Layout.TEXT);
         card.setText("Loading");
         view = card.getView();
         context.setContentView(view);
@@ -50,6 +52,8 @@ public class Presenter extends Activity {
 
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         mGestureDetector = createGestureDetector(this);
+
+        alive = true;
     }
 
     private GestureDetector createGestureDetector(Context context) {
@@ -60,22 +64,19 @@ public class Presenter extends Activity {
             public boolean onGesture(Gesture gesture) {
                 if (gesture == Gesture.SWIPE_RIGHT) {
                     Main.client.nextNote();
-                    audioManager.playSoundEffect(Sounds.SUCCESS);
                     return true;
                 } else if (gesture == Gesture.TWO_SWIPE_RIGHT) {
                     Main.client.nextSlide();
-                    audioManager.playSoundEffect(Sounds.SUCCESS);
                     return true;
                 } else if (gesture == Gesture.SWIPE_LEFT) {
                     Main.client.prevNote();
-                    audioManager.playSoundEffect(Sounds.SUCCESS);
                     return true;
                 } else if (gesture == Gesture.TWO_SWIPE_LEFT) {
                     Main.client.prevSlide();
-                    audioManager.playSoundEffect(Sounds.SUCCESS);
                     return true;
                 } else if (gesture == Gesture.SWIPE_DOWN) {
                     audioManager.playSoundEffect(Sounds.DISMISSED);
+                    Main.client.stopPresentation();
                     finish();
                     return true;
                 }
@@ -96,7 +97,7 @@ public class Presenter extends Activity {
     }
 
 
-    public static void update(final String content, Boolean stream, Long time){
+    public static void update(final String content, Long time){
         wake();
         context.runOnUiThread(new Runnable() {
             @Override
@@ -106,7 +107,7 @@ public class Presenter extends Activity {
                 context.setContentView(view);
             }
         });
-        if(!stream && time != null && time != 0){
+        if(time != null && time != 0){
             screenTimer.schedule(screenTask, time);
         }
     }
@@ -147,7 +148,7 @@ public class Presenter extends Activity {
 
     @Override
     public void finish(){
-        Main.client.stopPresentation();
+        alive = false;
         super.finish();
     }
 }

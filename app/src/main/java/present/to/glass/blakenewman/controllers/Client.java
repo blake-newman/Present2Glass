@@ -8,10 +8,58 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import present.to.glass.blakenewman.Main;
+import present.to.glass.blakenewman.Presenter;
 
 public class Client {
 
-    public String ip = "";
+    public Client() {
+        createThreadedSocket();
+    }
+
+    public String ip;
+
+    private void createThreadedSocket(){
+
+        if(ip.isEmpty()){
+            createThreadedSocket();
+            return;
+        }
+
+        new Thread(new Runnable() {
+            int dropped = 0;
+            @Override
+            public void run() {
+                try{
+                    Socket socket = createSocket();
+                    DataInputStream in = createIn(socket);
+                    DataOutputStream out = createOut(socket);
+                    //Wait for initial response - will tell to start reading data
+                    out.writeInt(0);
+                    int response = in.readInt();
+                    if (response == 1) {
+                        if (!Presenter.alive){
+                            Main.createPresenter();
+                        }
+                    } else if (response == 2) {
+                        if(Presenter.alive){
+                            Presenter.context.finish();
+                            Main.context.finish();
+                        }
+                    } else if (response == 3){
+                        if(Presenter.alive){
+                            Presenter.update(in.readUTF(), in.readLong());
+                        }
+                    }
+                    closeSocket(socket, in, out);
+                    createThreadedSocket();
+                } catch (IOException ignore){
+                    if(dropped++ < 20){
+                        run();
+                    }
+                }
+            }
+        }).start();
+    }
 
     private Socket createSocket() throws IOException {
         String host = ip;
@@ -48,7 +96,7 @@ public class Client {
         }
     }
 
-    public void stopPresentation(){
+    private void createOutSocket(final int code){
         if(ip.isEmpty()) return;
         new Thread(new Runnable() {
             int dropped = 0;
@@ -57,149 +105,40 @@ public class Client {
                 try{
                     Socket socket = createSocket();
                     DataOutputStream out = createOut(socket);
-                    out.writeInt(2);
+                    out.writeInt(code);
                     closeSocket(socket, null, out);
-                } catch (IOException ignore){
-                    if(dropped++ < 20){
+                } catch (IOException ignore) {
+                    if (dropped++ < 20){
                         run();
                     }
                 }
             }
+
         }).start();
     }
 
     public void startPresentation() {
-        if(ip.isEmpty()) return;
-        new Thread(new Runnable() {
-            int dropped = 0;
-            @Override
-            public void run() {
-                try{
-                    Socket socket = createSocket();
-                    DataOutputStream out = createOut(socket);
-
-                    out.writeInt(1);
-                    closeSocket(socket, null, out);
-                } catch (IOException ignore) {
-                    if (dropped++ < 20){
-                        run();
-                    }
-                }
-            }
-
-        }).start();
+        createOutSocket(1);
     }
 
-    public void endConnection() {
-        if(ip.isEmpty()) return;
-        new Thread(new Runnable() {
-            int dropped = 0;
-            @Override
-            public void run() {
-                try{
-                    Socket socket = createSocket();
-                    DataOutputStream out = createOut(socket);
-                    out.writeInt(3);
-                    closeSocket(socket, null, out);
-                    Main.context.finish();
-                } catch (IOException ignore){
-                    if (dropped++ < 20){
-                        run();
-                    } else {
-                        Main.context.finish();
-                    }
-                }
-            }
-
-        }).start();
+    public void stopPresentation(){
+        createOutSocket(2);
     }
 
     public void nextNote() {
-        if(ip.isEmpty()) return;
-        new Thread(new Runnable() {
-            int dropped = 0;
-            @Override
-            public void run() {
-                try{
-                    Socket socket = createSocket();
-                    DataOutputStream out = createOut(socket);
-
-                    out.writeInt(4);
-                    closeSocket(socket, null, out);
-                } catch (IOException ignore) {
-                    if (dropped++ < 20){
-                        run();
-                    }
-                }
-            }
-
-        }).start();
+        createOutSocket(3);
     }
 
 
     public void nextSlide() {
-        if(ip.isEmpty()) return;
-        new Thread(new Runnable() {
-            int dropped = 0;
-            @Override
-            public void run() {
-                try{
-                    Socket socket = createSocket();
-                    DataOutputStream out = createOut(socket);
-
-                    out.writeInt(5);
-                    closeSocket(socket, null, out);
-                } catch (IOException ignore) {
-                    if (dropped++ < 20){
-                        run();
-                    }
-                }
-            }
-
-        }).start();
+        createOutSocket(4);
     }
 
     public void prevNote() {
-        if(ip.isEmpty()) return;
-        new Thread(new Runnable() {
-            int dropped = 0;
-            @Override
-            public void run() {
-                try{
-                    Socket socket = createSocket();
-                    DataOutputStream out = createOut(socket);
-
-                    out.writeInt(6);
-                    closeSocket(socket, null, out);
-                } catch (IOException ignore) {
-                    if (dropped++ < 20){
-                        run();
-                    }
-                }
-            }
-
-        }).start();
+        createOutSocket(5);
     }
 
     public void prevSlide() {
-        if(ip.isEmpty()) return;
-        new Thread(new Runnable() {
-            int dropped = 0;
-            @Override
-            public void run() {
-                try{
-                    Socket socket = createSocket();
-                    DataOutputStream out = createOut(socket);
-
-                    out.writeInt(7);
-                    closeSocket(socket, null, out);
-                } catch (IOException ignore) {
-                    if (dropped++ < 20){
-                        run();
-                    }
-                }
-            }
-
-        }).start();
+        createOutSocket(6);
     }
 }

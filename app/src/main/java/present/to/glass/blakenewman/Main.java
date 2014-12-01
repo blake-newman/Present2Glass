@@ -43,7 +43,6 @@ public class Main extends Activity implements View.OnClickListener{
         createSplashLayout();
         server = new Server();
         client = new Client();
-
     }
 
     private GestureDetector createGestureDetector(Context context) {
@@ -122,6 +121,7 @@ public class Main extends Activity implements View.OnClickListener{
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    createPresenter();
                     startPresentation();
                 }
             });
@@ -149,8 +149,7 @@ public class Main extends Activity implements View.OnClickListener{
         new Thread(new Runnable() {
             @Override
             public void run() {
-                server.destroy();
-                client.endConnection();
+                server.destroySS();
                 audioManager.playSoundEffect(Sounds.DISMISSED);
             }
         }).run();
