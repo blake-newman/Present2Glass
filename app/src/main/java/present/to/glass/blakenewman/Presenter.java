@@ -49,10 +49,9 @@ public class Presenter extends Activity {
         context.setContentView(view);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         mGestureDetector = createGestureDetector(this);
-
+        System.out.println("created card");
         alive = true;
     }
 
@@ -77,6 +76,7 @@ public class Presenter extends Activity {
                 } else if (gesture == Gesture.SWIPE_DOWN) {
                     audioManager.playSoundEffect(Sounds.DISMISSED);
                     Main.client.stopPresentation();
+                    Main.client.destroy();
                     finish();
                     return true;
                 }

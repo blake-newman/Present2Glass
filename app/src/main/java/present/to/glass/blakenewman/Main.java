@@ -52,6 +52,7 @@ public class Main extends Activity implements View.OnClickListener{
             @Override
             public boolean onGesture(Gesture gesture) {
                 if (gesture == Gesture.SWIPE_DOWN) {
+                    client.destroy();
                     finish();
                     return true;
                 }
@@ -105,7 +106,7 @@ public class Main extends Activity implements View.OnClickListener{
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem item = menu.getItem(0);
-        item.setEnabled(!client.ip.equals(""));
+        item.setEnabled(!client.ip.isEmpty());
         return true;
     }
 

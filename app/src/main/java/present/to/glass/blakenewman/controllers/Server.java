@@ -9,7 +9,7 @@ import java.net.Socket;
 
 public class Server{
     private ServerSocket serverSocket;
-    private String ip;
+    protected String ip = "";
     public Server(){
         if(serverSocket != null) return;
         try {
@@ -36,6 +36,8 @@ public class Server{
                 serverSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally{
+                serverSocket = null;
             }
         }
     }
@@ -46,14 +48,14 @@ public class Server{
         public void run(){
             try {
                 socket = serverSocket.accept();
-                socket.setPerformancePreferences(1,0,0);
+                socket.setPerformancePreferences(1, 0, 0);
                 if(ip.isEmpty()) {
                     Main.client.ip = ip = socket.getInetAddress().toString();
+                    Main.client.start();
                 }
                 socket.setReuseAddress(true);
                 destroySS();
-            } catch (IOException ignored) {
-            } catch (NullPointerException ignored) {
+            } catch (IOException | NullPointerException ignored) {
             } finally {
                 if(socket != null && !socket.isClosed()){
                     try {
@@ -67,6 +69,7 @@ public class Server{
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
                 if (ip.isEmpty()){
                     addConnection();
                 }

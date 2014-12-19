@@ -5,7 +5,7 @@
     <string name="app_name">Present2Glass</string>
 
     <!-- The name of the application. -->
-    <string name="glass_ip">Glass IP Address</string>
+    <string name="glass_ip">Glass WiFi IP Address</string>
 
     <!-- Tip text displayed at the bottom of the splash screen, if ip address is found. -->
     <string name="tap_for_options">Tap for options</string>

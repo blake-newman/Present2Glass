@@ -12,27 +12,31 @@ import present.to.glass.blakenewman.Presenter;
 
 public class Client {
 
-    public Client() {
+    public String ip = "";
+    public Boolean listen = true;
+
+    public void start(){
         createThreadedSocket();
     }
 
-    public String ip;
+    public void destroy(){
+        listen = false;
+    }
+
 
     private void createThreadedSocket(){
-
-        if(ip.isEmpty()){
-            createThreadedSocket();
-            return;
-        }
-
         new Thread(new Runnable() {
-            int dropped = 0;
             @Override
             public void run() {
+                Socket socket = null;
+                DataInputStream in = null;
+                DataOutputStream out = null;
+
                 try{
-                    Socket socket = createSocket();
-                    DataInputStream in = createIn(socket);
-                    DataOutputStream out = createOut(socket);
+                    socket = createSocket();
+                    in = createIn(socket);
+                    out = createOut(socket);
+
                     //Wait for initial response - will tell to start reading data
                     out.writeInt(0);
                     int response = in.readInt();
@@ -50,11 +54,11 @@ public class Client {
                             Presenter.update(in.readUTF(), in.readLong());
                         }
                     }
-                    closeSocket(socket, in, out);
-                    createThreadedSocket();
                 } catch (IOException ignore){
-                    if(dropped++ < 20){
-                        run();
+                } finally {
+                    if(listen){
+                        closeSocket(socket, in, out);
+                        createThreadedSocket();
                     }
                 }
             }
@@ -81,18 +85,19 @@ public class Client {
         return new DataOutputStream(socket.getOutputStream());
     }
 
-    private void closeSocket(Socket socket, DataInputStream in, DataOutputStream out) throws IOException{
-        if(socket != null && !socket.isClosed()){
-            if(out != null){
-                out.flush();
-                out.close();
+    private void closeSocket(Socket socket, DataInputStream in, DataOutputStream out){
+        try {
+            if(socket != null && !socket.isClosed()){
+                if(out != null){
+                    out.flush();
+                    out.close();
+                }
+                if(in != null){
+                    in.close();
+                }
+                socket.close();
             }
-            if(in != null){
-                in.close();
-            }
-            socket.close();
-        } else {
-            throw new IOException("SOCKET NOT EXISTS");
+        } catch (IOException ignore) {
         }
     }
 
@@ -105,6 +110,7 @@ public class Client {
                 try{
                     Socket socket = createSocket();
                     DataOutputStream out = createOut(socket);
+                    System.out.println(code);
                     out.writeInt(code);
                     closeSocket(socket, null, out);
                 } catch (IOException ignore) {
@@ -128,7 +134,6 @@ public class Client {
     public void nextNote() {
         createOutSocket(3);
     }
-
 
     public void nextSlide() {
         createOutSocket(4);
